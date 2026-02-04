@@ -1,10 +1,11 @@
-/* import "./bootstrap";
-import "flyonui/flyonui"; */
+@import url("https://fonts.googleapis.com/css2?family=Battambang:wght@300;400;700&display=swap");
 
 @import "tailwindcss";
 
-/* Import FlyonUI v4 plugin style */
-@plugin "flyonui";
+@theme {
+  --font-sans: "Battambang", ui-sans-serif, system-ui, sans-serif;
+}
 
-/* Optional: If you want specific themes */
-@custom-variant dark (&:where(.dark, [data-theme="dark"], [data-theme="dark"] *));
+@plugin "@iconify/tailwind4";
+@plugin "flyonui";
+@import "flyonui/variants.css";

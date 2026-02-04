@@ -10,7 +10,7 @@
     @livewireStyles
 </head>
 
-<body class="bg-gray-100 text-gray-800">
+<body class="font-sans bg-gray-100 text-gray-800">
     <x-navbar />
     <x-sidebar />
 

@@ -69,7 +69,7 @@ class PostPage extends Component
 
 
     // ✅ Fill the form for editing
-    public function edit(int $id): void
+    public function edit($id)
     {
         $post = Post::findOrFail($id);
 
@@ -79,6 +79,9 @@ class PostPage extends Component
         $this->is_published = (bool) $post->is_published;
 
         $this->resetValidation();
+
+        // Increment this to force Livewire to re-draw the form with the new data
+        $this->formKey++;
     }
 
     public function delete(int $id): void
