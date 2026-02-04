@@ -1,0 +1,10 @@
+/* import "./bootstrap";
+import "flyonui/flyonui"; */
+
+@import "tailwindcss";
+
+/* Import FlyonUI v4 plugin style */
+@plugin "flyonui";
+
+/* Optional: If you want specific themes */
+@custom-variant dark (&:where(.dark, [data-theme="dark"], [data-theme="dark"] *));
