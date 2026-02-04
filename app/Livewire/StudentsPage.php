@@ -4,9 +4,11 @@ namespace App\Livewire;
 
 use App\Models\Student;
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use Livewire\WithPagination;
 use Illuminate\Validation\Rule;
 
+#[Layout('layouts.app')]
 class StudentsPage extends Component
 {
     use WithPagination;
@@ -115,6 +117,6 @@ class StudentsPage extends Component
                 })
                 ->latest()
                 ->paginate($this->perPage)
-        ])->layout('layouts.app');
+        ]);
     }
 }

@@ -100,7 +100,7 @@
 
     {{-- Modal --}}
     @if ($showModal)
-        <div class="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto"
+        <div class="fixed inset-0 z-9999 flex items-center justify-center overflow-y-auto"
             style="background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);">
 
             <div class="modal-box relative max-w-2xl bg-base-100 p-6 rounded-xl shadow-2xl border border-base-300"
@@ -154,7 +154,7 @@
                         <button type="button" class="btn btn-ghost gap-2" wire:click="$set('showModal', false)">
                             <span class="icon-[tabler--x] text-lg"></span>
                             Cancel
-                        </button>
+                        </button>`
 
                         <button type="submit" class="btn btn-primary px-8 gap-2" wire:loading.attr="disabled">
                             <span wire:loading class="loading loading-spinner loading-xs"></span>

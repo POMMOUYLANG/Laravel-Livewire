@@ -7,7 +7,7 @@
         <ul class="space-y-2 text-sm font-medium">
 
             <li>
-                <a href="#"
+                <a href="/"
                 class="flex items-center p-2 rounded-lg hover:bg-gray-100">
                 <span>📊</span>
                 <span class="ml-3">Dashboard</span>
