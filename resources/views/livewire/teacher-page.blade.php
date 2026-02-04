@@ -2,7 +2,7 @@
     {{-- Header --}}
     <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-            <h2 class="font-sans text-2xl font-semibold italic">Teacher Directory</h2>
+            <h2 class="font-sans text-2xl font-semibold ">Teacher Management</h2>
             <p class="text-sm opacity-70">Manage faculty records and departmental assignments</p>
         </div>
 
@@ -32,7 +32,7 @@
     <div class="card bg-base-100 shadow-sm border border-base-200">
         <div class="card-body p-4">
             <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div class="w-full md:w-[28rem]">
+                <div class="w-full md:w-md">
                     <label class="input input-bordered flex items-center gap-2 w-full">
                         <span class="icon-[tabler--search] text-lg opacity-70"></span>
                         <input type="text" class="grow" placeholder="Search by name, subject, or ID..."
@@ -79,7 +79,7 @@
                             <td class="align-middle">
                                 <div class="flex items-center gap-3">
                                     <div class="avatar placeholder">
-                                          {{-- Added 'flex items-center justify-center' to center the text --}}
+                                        {{-- Added 'flex items-center justify-center' to center the text --}}
                                         <div
                                             class="bg-primary/10 text-primary w-10 rounded-lg flex items-center justify-center">
                                             <span class="text-xs font-bold">{{ substr($t->name, 0, 2) }}</span>
@@ -115,12 +115,12 @@
                                     <button class="btn btn-sm btn-text text-primary"
                                         wire:click="openEdit({{ $t->id }})">
                                         {{-- <span class="icon-[tabler--edit-circle] text-lg"></span> --}}
-                                         <span class="icon-[tabler--pencil] text-lg"></span>
+                                        <span class="icon-[tabler--pencil] text-lg"></span>
                                     </button>
                                     <button class="btn btn-sm btn-text text-error"
                                         wire:click="delete({{ $t->id }})">
                                         {{-- <span class="icon-[tabler--trash-x] text-lg"></span> --}}
-                                         <span class="icon-[tabler--trash] text-lg"></span>
+                                        <span class="icon-[tabler--trash] text-lg"></span>
                                     </button>
                                 </div>
                             </td>
@@ -137,11 +137,11 @@
 
     {{-- Modal (Adapted for Teachers) --}}
     @if ($showModal)
-        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div class="fixed inset-0 z-9999 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-base-content/20 backdrop-blur-sm" wire:click="$set('showModal', false)">
             </div>
             <div class="relative w-full max-w-2xl rounded-2xl bg-base-100 shadow-2xl border border-base-200">
-                 <div class="flex items-start justify-between gap-3 px-6 py-5 border-b border-base-200">
+                <div class="flex items-start justify-between gap-3 px-6 py-5 border-b border-base-200">
                     <div>
                         <h3 class="text-xl font-bold leading-tight">
                             {{ $teacherId ? 'Edit Teacher Profile' : 'Register New Teacher' }}
@@ -166,7 +166,8 @@
                         </div>
                         <div class="form-control">
                             <label class="label"><span class="label-text font-bold">Email Address</span></label>
-                            <input type="email"   placeholder="teacher@email.com" class="input input-bordered" wire:model.defer="email" />
+                            <input type="email" placeholder="teacher@email.com" class="input input-bordered"
+                                wire:model.defer="email" />
                         </div>
                         <div class="form-control">
                             <label class="label"><span class="label-text font-bold">Department</span></label>

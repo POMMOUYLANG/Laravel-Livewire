@@ -27,7 +27,7 @@
     <div class="card bg-base-100 shadow-sm border border-base-200">
         <div class="card-body p-4">
             <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <label class="input input-bordered flex items-center gap-2 w-full md:w-[28rem]">
+                <label class="input input-bordered flex items-center gap-2 w-full md:w-md">
                     <span class="icon-[tabler--search] opacity-70"></span>
                     <input type="text" class="grow" placeholder="Search title or content..."
                         wire:model.live="search" />
@@ -98,7 +98,7 @@
                             </label>
 
                             <textarea wire:key="body-{{ $formKey }}" wire:model="body" placeholder="Write your content..."
-                                class="textarea textarea-bordered w-full min-h-[160px] @error('body') textarea-error @enderror"></textarea>
+                                class="textarea textarea-bordered w-full min-h-40 @error('body') textarea-error @enderror"></textarea>
 
                             @error('body')
                                 <label class="label">

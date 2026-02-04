@@ -41,7 +41,7 @@
             <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 
                 {{-- Search --}}
-                <div class="w-full md:w-[28rem]">
+                <div class="w-full md:w-md">
                     <label class="input input-bordered flex items-center gap-2 w-full">
                         <span class="icon-[tabler--search] text-lg opacity-70"></span>
 
@@ -189,7 +189,7 @@
 
     {{-- Modal --}}
     @if ($showModal)
-        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4" x-data
+        <div class="fixed inset-0 z-9999 flex items-center justify-center p-4" x-data
             x-on:keydown.escape.window="$wire.set('showModal', false)">
             {{-- Backdrop (click to close) --}}
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" wire:click="$set('showModal', false)"></div>
