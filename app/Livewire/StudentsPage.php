@@ -106,17 +106,20 @@ class StudentsPage extends Component
         $this->resetValidation();
     }
 
-    public function render()
-    {
-        return view('livewire.students-page', [
-            'students' => Student::query()
-                ->when($this->search, function ($q) {
-                    $q->where('name', 'like', "%{$this->search}%")
-                        ->orWhere('email', 'like', "%{$this->search}%")
-                        ->orWhere('class', 'like', "%{$this->search}%");
-                })
-                ->latest()
-                ->paginate($this->perPage)
-        ]);
-    }
+ // App/Livewire/StudentsPage.php
+
+public function render()
+{
+    return view('livewire.students-page', [
+        'students' => Student::query()
+            ->when($this->search, function ($q) {
+                $q->where('name', 'like', "%{$this->search}%")
+                    ->orWhere('email', 'like', "%{$this->search}%")
+                    ->orWhere('phone', 'like', "%{$this->search}%") // Added phone search
+                    ->orWhere('class', 'like', "%{$this->search}%");
+            })
+            ->latest()
+            ->paginate($this->perPage)
+    ]);
+}
 }

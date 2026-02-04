@@ -11,6 +11,7 @@
 </head>
 
 <body class="font-sans bg-gray-100 text-gray-800">
+    <script src="../node_modules/flyonui/flyonui.js"></script>
     <x-navbar />
     <x-sidebar />
 

@@ -9,5 +9,10 @@ module.exports = {
     theme: {
         extend: {},
     },
-    plugins: [],
+    plugins: [
+        require("flyonui"),
+        require("flyonui/plugin"),
+        // ADD THIS LINE:
+        require("@iconify/tailwind"),
+    ],
 };

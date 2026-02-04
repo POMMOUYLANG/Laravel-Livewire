@@ -7,10 +7,25 @@
         </div>
 
         <button class="btn btn-primary btn-outline gap-2" wire:click="openCreate">
-            <span class="icon-[tabler--plus] text-lg"></span>
+            <span class="icon-[tabler--user-plus] text-lg"></span>
             Add Student
         </button>
+    </div>
 
+    {{-- Stats Row (New Addition for Design Depth) --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="card bg-base-100 border border-base-200 shadow-sm">
+            <div class="card-body p-4 flex-row items-center gap-4">
+                <div class="btn btn-square btn-soft btn-info no-animation">
+                    <span class="icon-[tabler--users-group] text-xl"></span>
+                </div>
+                <div>
+                    <p class="text-xs opacity-60 uppercase font-bold tracking-tighter">Total Students</p>
+                    <p class="text-xl font-bold">30</p>
+                </div>
+            </div>
+        </div>
+        {{-- Repeat for other stats if needed --}}
     </div>
 
     {{-- Flash message --}}
@@ -82,7 +97,7 @@
 
                 <thead>
                     <tr class="text-xs uppercase tracking-wide opacity-70">
-                        <th class="pl-6">#</th>
+                        <th class="pl-6">No.</th>
                         <th>Student</th>
                         <th>Class</th>
                         <th>Phone</th>
@@ -98,8 +113,19 @@
                             </td>
 
                             <td class="align-middle">
-                                <div class="font-semibold leading-tight">{{ $s->name }}</div>
-                                <div class="text-sm opacity-60">{{ $s->email }}</div>
+                                <div class="flex items-center gap-3">
+                                    <div class="avatar placeholder">
+                                        {{-- Added 'flex items-center justify-center' to center the text --}}
+                                        <div
+                                            class="bg-primary/10 text-primary w-10 rounded-lg flex items-center justify-center">
+                                            <span class="text-xs font-bold">{{ substr($s->name, 0, 2) }}</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold leading-tight">{{ $s->name }}</div>
+                                        <div class="text-[11px] opacity-60 uppercase">ID: TCH-{{ $s->id }}</div>
+                                    </div>
+                                </div>
                             </td>
 
                             <td class="align-middle">
@@ -109,20 +135,27 @@
                             </td>
 
                             <td class="align-middle">
-                                <span class="text-sm opacity-80">{{ $s->phone ?? '—' }}</span>
+                                <div class="flex flex-col text-sm opacity-80">
+                                    <div class="flex items-center gap-1">
+                                        <span class="icon-[tabler--mail] text-xs"></span> {{ $s->email }}
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="icon-[tabler--phone] text-xs"></span> {{ $s->phone ?? '—' }}
+                                    </div>
+                                </div>
                             </td>
 
                             <td class="pr-6 align-middle">
                                 <div class="flex justify-end items-center gap-1">
 
                                     {{-- Edit (icon-only like screenshot) --}}
-                                    <button type="button" class="btn btn-sm btn-text" aria-label="Edit"
+                                    <button type="button" class="btn btn-sm btn-text text-primary" aria-label="Edit"
                                         wire:click="openEdit({{ $s->id }})" title="Edit">
                                         <span class="icon-[tabler--pencil] text-lg"></span>
                                     </button>
 
                                     {{-- Delete --}}
-                                    <button type="button" class="btn btn-sm btn-text" aria-label="Delete"
+                                    <button type="button" class="btn btn-sm btn-text text-error" aria-label="Delete"
                                         title="Delete"
                                         onclick="confirm('Are you sure?') || event.stopImmediatePropagation()"
                                         wire:click="delete({{ $s->id }})">
