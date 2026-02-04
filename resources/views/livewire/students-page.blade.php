@@ -12,6 +12,7 @@
             Add Student
         </button>
 
+
     </div>
 
     {{-- Flash message --}}

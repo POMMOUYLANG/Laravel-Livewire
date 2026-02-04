@@ -10,22 +10,17 @@
     @livewireStyles
 </head>
 
-<body class="">
-
-    <!-- Navbar -->
+<body class="bg-gray-100 text-gray-800">
     <x-navbar />
-
-    <!-- Sidebar -->
     <x-sidebar />
 
-    <!-- Main Content -->
-    <main class="bg-grey-100 text-gray-800 min-h-screen pt-20 md:ml-64 p-6">
-        <div class="container mx-auto px-x py-6">
+    <main class="min-h-screen pt-20 md:ml-64 p-6">
+        <div class="px-3 py-3">
             {{ $slot }}
         </div>
     </main>
 
-    @livewireScripts()
+    @livewireScripts
 </body>
 
 </html>

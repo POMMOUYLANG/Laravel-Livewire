@@ -9,4 +9,4 @@ use App\Livewire\PostPage;
 // });
 
 Route::get('/students', StudentsPage::class)->name('students.index');
-Route::get('/posts', PostPage::class);
+Route::get('/posts', PostPage::class)->name('posts.index');
