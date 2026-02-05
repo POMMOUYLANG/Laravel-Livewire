@@ -159,7 +159,7 @@
                                         title="Delete" wire:click="confirmDelete({{ $s->id }})">
                                         <span class="icon-[tabler--trash] text-lg"></span>
                                     </button>
-                                    <x-confirm-dialog :show="$confirmingDelete" title="Delete student"
+                                    <x-features.confirm-dialog :show="$confirmingDelete" title="Delete student"
                                         message="Are you sure you want to delete this student?" />
 
 
@@ -189,10 +189,10 @@
 
 
     {{-- Modal --}}
-    <x-student-modal :show="$showModal" :title="$studentId ? 'Edit Student Profile' : 'Register New Student'"
+    <x-students.student-modal :show="$showModal" :title="$studentId ? 'Edit Student Profile' : 'Register New Student'"
         subtitle="Fill in the information below. Fields with * are required.">
-        <x-student-form :student-id="$studentId" />
-    </x-student-modal>
+        <x-students.student-form :student-id="$studentId" />
+    </x-students.student-modal>
 
 
 </div>

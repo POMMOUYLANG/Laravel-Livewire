@@ -128,7 +128,7 @@
                                         wire:click="confirmDelete({{ $t->id }})" title="Delete">
                                         <span class="icon-[tabler--trash] text-lg"></span>
                                     </button>
-                                    <x-confirm-dialog :show="$confirmingDelete" title="Delete teacher" :message="'Are you sure you want to delete ' . $deleteName . '?'" />
+                                    <x-features.confirm-dialog :show="$confirmingDelete" title="Delete teacher" :message="'Are you sure you want to delete ' . $deleteName . '?'" />
 
                                 </div>
                             </td>
@@ -148,9 +148,9 @@
     </div>
 
     {{-- Modal (Adapted for Teachers) --}}
-    <x-teacher-modal :show="$showModal" :title="$teacherId ? 'Edit Teacher Profile' : 'Register New Teacher'"
+    <x-teachers.teacher-modal :show="$showModal" :title="$teacherId ? 'Edit Teacher Profile' : 'Register New Teacher'"
         subtitle="Fill in the information below. Fields with * are required.">
-        <x-teacher-form :teacher-id="$teacherId" />
-    </x-teacher-modal>
+        <x-teachers.teacher-form :teacher-id="$teacherId" />
+    </x-teachers.teacher-modal>
 
 </div>
