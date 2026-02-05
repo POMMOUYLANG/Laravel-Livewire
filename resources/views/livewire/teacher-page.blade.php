@@ -28,6 +28,13 @@
         {{-- Repeat for other stats if needed --}}
     </div>
 
+    {{-- Flash message --}}
+    @if (session('message'))
+        <div class="alert alert-success shadow mb-4">
+            <span>{{ session('message') }}</span>
+        </div>
+    @endif
+
     {{-- Filters & Search --}}
     <div class="card bg-base-100 shadow-sm border border-base-200">
         <div class="card-body p-4">
@@ -118,10 +125,11 @@
                                         <span class="icon-[tabler--pencil] text-lg"></span>
                                     </button>
                                     <button class="btn btn-sm btn-text text-error"
-                                        wire:click="delete({{ $t->id }})">
-                                        {{-- <span class="icon-[tabler--trash-x] text-lg"></span> --}}
+                                        wire:click="confirmDelete({{ $t->id }})" title="Delete">
                                         <span class="icon-[tabler--trash] text-lg"></span>
                                     </button>
+                                    <x-confirm-dialog :show="$confirmingDelete" title="Delete teacher" :message="'Are you sure you want to delete ' . $deleteName . '?'" />
+
                                 </div>
                             </td>
                         </tr>
@@ -133,64 +141,16 @@
                 </tbody>
             </table>
         </div>
+        {{-- Footer (pagination area like screenshot spacing) --}}
+        <div class="px-6 py-4 border-t border-base-200">
+            {{ $teachers->links() }}
+        </div>
     </div>
 
     {{-- Modal (Adapted for Teachers) --}}
-    @if ($showModal)
-        <div class="fixed inset-0 z-9999 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-base-content/20 backdrop-blur-sm" wire:click="$set('showModal', false)">
-            </div>
-            <div class="relative w-full max-w-2xl rounded-2xl bg-base-100 shadow-2xl border border-base-200">
-                <div class="flex items-start justify-between gap-3 px-6 py-5 border-b border-base-200">
-                    <div>
-                        <h3 class="text-xl font-bold leading-tight">
-                            {{ $teacherId ? 'Edit Teacher Profile' : 'Register New Teacher' }}
-                        </h3>
-                        <p class="text-sm opacity-70 mt-1">
-                            Fill in the information below. Fields with * are required.
-                        </p>
-                    </div>
+    <x-teacher-modal :show="$showModal" :title="$teacherId ? 'Edit Teacher Profile' : 'Register New Teacher'"
+        subtitle="Fill in the information below. Fields with * are required.">
+        <x-teacher-form :teacher-id="$teacherId" />
+    </x-teacher-modal>
 
-                    <button type="button" class="btn btn-sm btn-circle btn-ghost" aria-label="Close"
-                        wire:click="$set('showModal', false)">
-                        <span class="icon-[tabler--x] text-xl"></span>
-                    </button>
-                </div>
-
-                <form wire:submit.prevent="save" class="p-6 space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="form-control">
-                            <label class="label"><span class="label-text font-bold">Full Name</span></label>
-                            <input type="text" class="input input-bordered" wire:model.defer="name"
-                                placeholder="e.g. Dr. Sarah Smith" />
-                        </div>
-                        <div class="form-control">
-                            <label class="label"><span class="label-text font-bold">Email Address</span></label>
-                            <input type="email" placeholder="teacher@email.com" class="input input-bordered"
-                                wire:model.defer="email" />
-                        </div>
-                        <div class="form-control">
-                            <label class="label"><span class="label-text font-bold">Department</span></label>
-                            <select class="select select-bordered" wire:model.defer="department">
-                                <option value="Mathematics">Mathematics</option>
-                                <option value="Science">Science</option>
-                                <option value="Language">Language</option>
-                            </select>
-                        </div>
-                        <div class="form-control">
-                            <label class="label"><span class="label-text font-bold">Subject Specialty</span></label>
-                            <input type="text" class="input input-bordered" wire:model.defer="subject"
-                                placeholder="e.g. Physics" />
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end gap-2 pt-4">
-                        <button type="button" class="btn btn-ghost"
-                            wire:click="$set('showModal', false)">Cancel</button>
-                        <button type="submit" class="btn btn-primary px-8">Save Teacher</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    @endif
 </div>

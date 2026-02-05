@@ -21,6 +21,11 @@ class TeacherPage extends Component
     public $teacherId;
     public $name, $email, $department, $subject, $phone;
 
+    public bool $confirmingDelete = false;
+    public ?int $deleteId = null;
+    public string $deleteName = '';
+
+
     // Reset pagination when searching
     public function updatingSearch()
     {
@@ -94,5 +99,30 @@ class TeacherPage extends Component
             'teachers' => $teachers,
             'totalFaculty' => Teacher::count() // Added to make the stat card dynamic
         ]);
+    }
+
+    public function confirmDelete(int $id): void
+    {
+        $teacher = \App\Models\Teacher::findOrFail($id);
+
+        $this->deleteId = $id;
+        $this->deleteName = $teacher->name;
+        $this->confirmingDelete = true;
+    }
+
+    public function cancelDelete(): void
+    {
+        $this->confirmingDelete = false;
+        $this->deleteId = null;
+        $this->deleteName = '';
+    }
+
+    public function deleteConfirmed(): void
+    {
+        \App\Models\Teacher::findOrFail($this->deleteId)->delete();
+
+        $this->cancelDelete();
+
+        session()->flash('message', 'Teacher deleted successfully.');
     }
 }

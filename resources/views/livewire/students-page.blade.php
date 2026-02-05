@@ -156,11 +156,12 @@
 
                                     {{-- Delete --}}
                                     <button type="button" class="btn btn-sm btn-text text-error" aria-label="Delete"
-                                        title="Delete"
-                                        onclick="confirm('Are you sure?') || event.stopImmediatePropagation()"
-                                        wire:click="delete({{ $s->id }})">
+                                        title="Delete" wire:click="confirmDelete({{ $s->id }})">
                                         <span class="icon-[tabler--trash] text-lg"></span>
                                     </button>
+                                    <x-confirm-dialog :show="$confirmingDelete" title="Delete student"
+                                        message="Are you sure you want to delete this student?" />
+
 
                                     <button type="button" class="btn btn-sm btn-text" aria-label="More" title="More"
                                         tabindex="0">
@@ -188,117 +189,10 @@
 
 
     {{-- Modal --}}
-    @if ($showModal)
-        <div class="fixed inset-0 z-9999 flex items-center justify-center p-4" x-data
-            x-on:keydown.escape.window="$wire.set('showModal', false)">
-            {{-- Backdrop (click to close) --}}
-            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" wire:click="$set('showModal', false)"></div>
+    <x-student-modal :show="$showModal" :title="$studentId ? 'Edit Student Profile' : 'Register New Student'"
+        subtitle="Fill in the information below. Fields with * are required.">
+        <x-student-form :student-id="$studentId" />
+    </x-student-modal>
 
-            {{-- Modal Box --}}
-            <div class="relative w-full max-w-2xl rounded-2xl bg-base-100 shadow-2xl border border-base-300"
-                role="dialog" aria-modal="true">
-                {{-- Header --}}
-                <div class="flex items-start justify-between gap-3 px-6 py-5 border-b border-base-200">
-                    <div>
-                        <h3 class="text-xl font-bold leading-tight">
-                            {{ $studentId ? 'Edit Student Profile' : 'Register New Student' }}
-                        </h3>
-                        <p class="text-sm opacity-70 mt-1">
-                            Fill in the information below. Fields with * are required.
-                        </p>
-                    </div>
-
-                    <button type="button" class="btn btn-sm btn-circle btn-ghost" aria-label="Close"
-                        wire:click="$set('showModal', false)">
-                        <span class="icon-[tabler--x] text-xl"></span>
-                    </button>
-                </div>
-
-                {{-- Body --}}
-                <form wire:submit.prevent="save" class="px-6 py-5 space-y-5">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {{-- Name --}}
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text font-medium">Name *</span>
-                            </label>
-                            <input type="text"
-                                class="input input-bordered w-full @error('name') input-error @enderror"
-                                placeholder="Student name" wire:model.defer="name" />
-                            @error('name')
-                                <label class="label">
-                                    <span class="label-text-alt text-error">{{ $message }}</span>
-                                </label>
-                            @enderror
-                        </div>
-
-                        {{-- Email --}}
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text font-medium">Email *</span>
-                            </label>
-                            <input type="email"
-                                class="input input-bordered w-full @error('email') input-error @enderror"
-                                placeholder="student@email.com" wire:model.defer="email" />
-                            @error('email')
-                                <label class="label">
-                                    <span class="label-text-alt text-error">{{ $message }}</span>
-                                </label>
-                            @enderror
-                        </div>
-
-                        {{-- Class --}}
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text font-medium">Class</span>
-                            </label>
-                            <input type="text" class="input input-bordered w-full" placeholder="10A, 11B..."
-                                wire:model.defer="class" />
-                        </div>
-
-                        {{-- Phone --}}
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text font-medium">Phone</span>
-                            </label>
-                            <input type="text" class="input input-bordered w-full" placeholder="+855..."
-                                wire:model.defer="phone" />
-                        </div>
-
-                        {{-- DOB --}}
-                        <div class="form-control md:col-span-2">
-                            <label class="label">
-                                <span class="label-text font-medium">Date of Birth</span>
-                            </label>
-                            <input type="date" class="input input-bordered w-full" wire:model.defer="dob" />
-                        </div>
-                    </div>
-
-                    {{-- Footer / Actions --}}
-                    <div class="flex flex-col-reverse md:flex-row md:justify-end gap-2 pt-2 border-t border-base-200">
-                        <button type="button" class="btn btn-ghost gap-2" wire:click="$set('showModal', false)">
-                            <span class="icon-[tabler--x] text-lg"></span>
-                            Cancel
-                        </button>
-
-                        <button type="submit" class="btn btn-primary gap-2" wire:loading.attr="disabled"
-                            wire:target="save">
-                            <span wire:loading wire:target="save" class="loading loading-spinner loading-xs"></span>
-
-                            <span wire:loading.remove wire:target="save">
-                                @if ($studentId)
-                                    <span class="icon-[tabler--device-floppy] text-lg"></span>
-                                    Update
-                                @else
-                                    <span class="icon-[tabler--plus] text-lg"></span>
-                                    Create
-                                @endif
-                            </span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    @endif
 
 </div>

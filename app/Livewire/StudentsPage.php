@@ -25,6 +25,10 @@ class StudentsPage extends Component
 
     public bool $showModal = false;
 
+    public bool $confirmingDelete = false;
+    public ?int $deleteId = null;
+
+
     protected function rules(): array
     {
         return [
@@ -106,20 +110,41 @@ class StudentsPage extends Component
         $this->resetValidation();
     }
 
- // App/Livewire/StudentsPage.php
+    // App/Livewire/StudentsPage.php
 
-public function render()
-{
-    return view('livewire.students-page', [
-        'students' => Student::query()
-            ->when($this->search, function ($q) {
-                $q->where('name', 'like', "%{$this->search}%")
-                    ->orWhere('email', 'like', "%{$this->search}%")
-                    ->orWhere('phone', 'like', "%{$this->search}%") // Added phone search
-                    ->orWhere('class', 'like', "%{$this->search}%");
-            })
-            ->latest()
-            ->paginate($this->perPage)
-    ]);
-}
+    public function render()
+    {
+        return view('livewire.students-page', [
+            'students' => Student::query()
+                ->when($this->search, function ($q) {
+                    $q->where('name', 'like', "%{$this->search}%")
+                        ->orWhere('email', 'like', "%{$this->search}%")
+                        ->orWhere('phone', 'like', "%{$this->search}%") // Added phone search
+                        ->orWhere('class', 'like', "%{$this->search}%");
+                })
+                ->latest()
+                ->paginate($this->perPage)
+        ]);
+    }
+
+    public function confirmDelete(int $id): void
+    {
+        $this->deleteId = $id;
+        $this->confirmingDelete = true;
+    }
+
+    public function cancelDelete(): void
+    {
+        $this->confirmingDelete = false;
+        $this->deleteId = null;
+    }
+
+        public function deleteConfirmed(): void
+    {
+        \App\Models\Student::findOrFail($this->deleteId)->delete();
+
+        $this->cancelDelete();
+
+        session()->flash('message', 'Student deleted successfully.');
+    }
 }
