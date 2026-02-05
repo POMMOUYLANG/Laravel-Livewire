@@ -8,16 +8,25 @@
 @endphp
 
 <aside id="sidebar"
-    class="overlay overlay-open:translate-x-0 drawer drawer-start fixed top-0 left-0 z-40 w-64 h-screen pt-16 bg-base-100 border-r border-base-200
-           -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out"
+    class="overlay overlay-open:translate-x-0 drawer drawer-start fixed top-0 left-0 z-40
+           w-64 h-screen pt-16 bg-base-100 border-r border-base-200
+           -translate-x-full md:translate-x-0 transition-transform duration-300"
     role="dialog" tabindex="-1">
+
 
     <div class="h-full px-3 py-4 overflow-y-auto">
 
         {{-- Brand Section (Visible only on Mobile if Navbar is hidden) --}}
-        <div class="px-3 pb-4 md:hidden">
-            <div class="text-xl font-bold tracking-tight text-primary">Student Manager</div>
-            <div class="text-[10px] uppercase opacity-50 font-bold tracking-widest">Admin Portal</div>
+        <div class="flex items-center justify-between px-3 pb-3 lg:hidden">
+            <div>
+                <div class="text-xl font-bold tracking-tight text-primary">Student Manager</div>
+                <div class="text-[10px] uppercase opacity-50 font-bold tracking-widest">Admin Portal</div>
+            </div>
+
+            <button type="button" class="btn btn-sm btn-ghost btn-square" data-overlay="#sidebar"
+                aria-label="Close sidebar">
+                <span class="icon-[tabler--x] text-xl"></span>
+            </button>
         </div>
 
         <ul class="menu menu-sm w-full gap-1 px-0">
@@ -37,11 +46,12 @@
 
             {{-- Students --}}
             <li>
-                <a href="{{ route('students.index') }}"
+                <a href="{{ route('students.index') }}" data-overlay="#sidebar"
                     class="{{ $linkBase }} {{ $isActive(request()->routeIs('students.*')) }}">
                     <span class="icon-[tabler--school] text-xl"></span>
                     <span>Students</span>
                 </a>
+
             </li>
 
             {{-- Teachers --}}

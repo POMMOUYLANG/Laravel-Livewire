@@ -14,6 +14,8 @@
     <script src="../node_modules/flyonui/flyonui.js"></script>
     <x-navbar />
     <x-sidebar />
+    {{-- <livewire:navbar />
+    <livewire:sidebar /> --}}
 
     <main class="min-h-screen pt-20 md:ml-64 p-6">
         <div class="px-3 py-3">

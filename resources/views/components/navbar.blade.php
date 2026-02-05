@@ -10,9 +10,9 @@
             </button>
 
             {{-- Brand --}}
-            <a href="{{ url('/') }}" class="flex items-center gap-3 group transition-all">
+            <a href="{{ url('/') }}" class="hidden lg:flex items-center gap-3 group transition-all">
                 <div class="btn btn-sm btn-primary btn-square shadow-md shadow-primary/20">
-                    <span class="icon-[tabler--menu-2] text-lg text-white"></span>
+                    <span class="icon-[tabler--carambola-filled] text-lg text-white"></span>
                 </div>
 
                 <div class="leading-tight">
