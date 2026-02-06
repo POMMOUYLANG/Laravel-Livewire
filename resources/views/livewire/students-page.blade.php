@@ -12,7 +12,7 @@
         </button>
     </div>
 
-    {{-- Stats Row (New Addition for Design Depth) --}}
+    {{-- Stats Row --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="card bg-base-100 border border-base-200 shadow-sm">
             <div class="card-body p-4 flex-row items-center gap-4">
@@ -25,7 +25,6 @@
                 </div>
             </div>
         </div>
-        {{-- Repeat for other stats if needed --}}
     </div>
 
     {{-- Flash message --}}
@@ -48,7 +47,6 @@
                         <input type="text" class="grow" placeholder="Search name, email, phone..."
                             wire:model.live.debounce.300ms="search" />
 
-                        {{-- Clear button (only show if there is search text) --}}
                         @if ($search)
                             <button type="button" class="btn btn-ghost btn-sm btn-circle" aria-label="Clear search"
                                 wire:click="$set('search','')">
@@ -57,7 +55,6 @@
                         @endif
                     </label>
 
-                    {{-- Small helper text --}}
                     <div class="mt-1 text-xs opacity-60">
                         Tip: type to filter results instantly
                     </div>
@@ -79,7 +76,6 @@
         </div>
     </div>
 
-
     {{-- Table --}}
     <div class="bg-base-100 rounded-xl border border-base-200 shadow-sm overflow-hidden">
         <div class="p-6 pb-2">
@@ -88,145 +84,18 @@
         </div>
 
         <div class="px-6 pb-6">
-            {{-- Removed 'ag-theme-quartz' class --}}
-            <div wire:ignore id="studentsGrid" style="height: 520px; width: 100%;"></div>
+            <div wire:ignore id="studentsGrid" data-per-page="{{ $perPage }}" style="height: 520px; width: 100%;">
+            </div>
         </div>
     </div>
-    <script>
-        document.addEventListener('livewire:init', () => {
-            if (window.__studentsGridInited) return;
-            window.__studentsGridInited = true;
 
-            const gridEl = document.getElementById('studentsGrid');
-            let perPage = @json($perPage);
-
-            // 1. Define columnDefs FIRST
-            const columnDefs = [{
-                    headerName: "No.",
-                    valueGetter: p => p.node.rowIndex + 1,
-                    width: 90,
-                    sortable: false,
-                    filter: false
-                },
-                {
-                    field: "name",
-                    headerName: "Name",
-                    filter: 'agTextColumnFilter'
-                },
-                {
-                    field: "email",
-                    headerName: "Email",
-                    filter: 'agTextColumnFilter'
-                },
-                {
-                    field: "class",
-                    headerName: "Class",
-                    width: 140
-                },
-                {
-                    field: "phone",
-                    headerName: "Phone",
-                    width: 160
-                },
-                {
-                    headerName: "Actions",
-                    sortable: false,
-                    filter: false,
-                    width: 150,
-                    cellRenderer: (params) => {
-                        // AG Grid might pass params.data as undefined while loading
-                        if (!params.data) return null;
-
-                        const id = params.data.id;
-                        const wrap = document.createElement('div');
-                        // Ensure the container is visible and aligned
-                        wrap.className = "flex justify-end items-center gap-2 h-full pr-2";
-
-                        // Create Edit Button
-                        const editBtn = document.createElement('button');
-                        editBtn.className =
-                            "btn btn-sm btn-text text-primary flex items-center justify-center";
-                        editBtn.setAttribute('title', 'Edit');
-                        editBtn.innerHTML =
-                            '<span class="icon-[tabler--pencil] text-xl" style="display: block;"></span>';
-                        editBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            @this.call('openEdit', id);
-                        };
-
-                        // Create Delete Button
-                        const delBtn = document.createElement('button');
-                        delBtn.className =
-                        "btn btn-sm btn-text text-error flex items-center justify-center";
-                        delBtn.setAttribute('title', 'Delete');
-                        delBtn.innerHTML =
-                            '<span class="icon-[tabler--trash] text-xl" style="display: block;"></span>';
-                        delBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            @this.call('confirmDelete', id);
-                        };
-
-                        wrap.appendChild(editBtn);
-                        wrap.appendChild(delBtn);
-                        return wrap;
-                    }
-                }
-            ];
-
-            // 2. Define gridOptions (Now columnDefs is definitely defined)
-            const gridOptions = {
-                theme: window.themeQuartz, // Make sure window.themeQuartz is set in app.js
-                columnDefs: columnDefs,
-                defaultColDef: {
-                    resizable: true,
-                    sortable: true,
-                    filter: true,
-                    flex: 1,
-                    minWidth: 120
-                },
-                rowModelType: 'infinite',
-                cacheBlockSize: perPage,
-                datasource: {
-                    getRows: async (params) => {
-                        try {
-                            const payload = {
-                                startRow: params.startRow,
-                                endRow: params.endRow,
-                                sortModel: params.sortModel,
-                                filterModel: params.filterModel,
-                            };
-                            const res = await @this.call('gridRows', payload);
-                            params.successCallback(res.rows, res.total);
-                        } catch (e) {
-                            console.error("Grid Data Error:", e);
-                            params.failCallback();
-                        }
-                    }
-                }
-            };
-
-            // 3. Initialize the Grid
-            const gridApi = window.createAgGrid(gridEl, gridOptions);
-
-            // 4. Set up Event Listeners
-            Livewire.on('students-updated', () => gridApi.refreshInfiniteCache());
-
-            Livewire.on('grid-refresh', (event) => {
-                const newPerPage = event.perPage || event[0].perPage;
-                if (newPerPage) {
-                    gridApi.setGridOption('cacheBlockSize', parseInt(newPerPage));
-                }
-                gridApi.refreshInfiniteCache();
-            });
-        });
-    </script>
+    @push('scripts')
+        @vite('resources/js/pages/students.js')
+    @endpush
 
     {{-- Modal --}}
     <x-students.student-modal :show="$showModal" :title="$studentId ? 'Edit Student Profile' : 'Register New Student'"
         subtitle="Fill in the information below. Fields with * are required.">
         <x-students.student-form :student-id="$studentId" />
     </x-students.student-modal>
-
-
-
 </div>
