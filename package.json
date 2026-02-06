@@ -1,0 +1,29 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite"
+    },
+    "devDependencies": {
+        "@iconify-json/lucide": "^1.2.88",
+        "@iconify-json/tabler": "^1.2.26",
+        "@iconify/tailwind": "^1.2.0",
+        "@iconify/tailwind4": "^1.2.1",
+        "@tailwindcss/vite": "^4.1.18",
+        "autoprefixer": "^10.4.24",
+        "axios": "^1.11.0",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^2.0.0",
+        "postcss": "^8.5.6",
+        "tailwindcss": "^4.1.18",
+        "vite": "^7.0.7"
+    },
+    "dependencies": {
+        "ag-grid-community": "^35.0.1",
+        "alpinejs": "^3.15.8",
+        "flyonui": "^2.4.1",
+        "lucide-vue-next": "^0.563.0"
+    }
+}
