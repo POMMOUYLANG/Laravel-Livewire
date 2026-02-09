@@ -99,11 +99,15 @@
                     <div class="divider my-1 opacity-50"></div>
 
                     <li>
-                        <a class="dropdown-item flex items-center gap-3 rounded-lg py-2.5 px-4 text-error hover:bg-error/10 transition-colors"
-                            href="#">
-                            <span class="icon-[tabler--logout] text-lg"></span>
-                            Sign Out
-                        </a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit"
+                                class="dropdown-item flex items-center gap-3 rounded-lg py-2.5 px-4 text-error hover:bg-error/10 transition-colors w-full text-left">
+                                <span class="icon-[tabler--logout] text-lg"></span>
+                                Sign Out
+                            </button>
+                        </form>
+
                     </li>
                 </ul>
             </div>
