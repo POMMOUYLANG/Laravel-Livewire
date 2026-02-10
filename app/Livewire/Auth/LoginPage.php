@@ -14,6 +14,16 @@ class LoginPage extends Component
     public string $password = '';
     public bool $remember = false;
 
+    public function mount()
+    {
+        if (Auth::check()) {
+            $this->redirectRoute('dashboard', navigate: true);
+        }
+        // Do nothing if guest -> show login page
+    }
+
+
+
     public function login(): void
     {
         $credentials = $this->validate([

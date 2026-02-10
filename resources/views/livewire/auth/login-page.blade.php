@@ -7,7 +7,7 @@
             </div>
 
             {{-- Global error (optional) --}}
-            @if ($errors->any())
+            @if ($errors->has('email') && str_contains($errors->first('email'), 'credentials'))
                 <div class="alert alert-error">
                     <span class="icon-[tabler--alert-triangle] text-lg"></span>
                     <div>
@@ -18,13 +18,16 @@
             @endif
 
             {{-- SSO  --}}
-            <button type="button" class="btn w-full" onclick="window.location='{{ route('sso.redirect') }}'">
+            <a href="{{ route('sso.login') }}" class="btn w-full btn-neutral">
                 Sign in with SSO
-            </button>
+            </a>
 
+            {{-- optional message --}}
+            <div class="mt-3 text-sm opacity-70">
+                Please use SSO to sign in.
+            </div>
 
             <div class="divider">or</div>
-
 
             <form wire:submit.prevent="login" class="space-y-4">
 
@@ -36,7 +39,7 @@
 
                     <label class="input input-bordered flex items-center gap-2">
                         <span class="icon-[tabler--mail] text-lg opacity-70"></span>
-                        <input type="email" class="grow" placeholder="you@example.com" wire:model.defer="email"
+                        <input type="email" class="grow" placeholder="you@example.com" wire:model.live="email"
                             autocomplete="email" />
                     </label>
 
@@ -57,7 +60,7 @@
                         <span class="icon-[tabler--lock] text-lg opacity-70"></span>
 
                         <input id="login-password" type="password" class="grow" placeholder="••••••••"
-                            wire:model.defer="password" autocomplete="current-password" />
+                            wire:model.live="password" autocomplete="current-password" />
 
                         <button type="button" class="btn btn-ghost btn-xs"
                             onclick="const i=document.getElementById('login-password'); i.type = (i.type === 'password' ? 'text' : 'password');"

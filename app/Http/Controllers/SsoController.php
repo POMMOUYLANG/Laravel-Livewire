@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Str;
 
@@ -24,11 +25,10 @@ class SsoController extends Controller
         $loginPath = config('sso.login_path');
         $url = $base . $loginPath . '?' . http_build_query([
             'appKey' => $appKey,
-            'redirectUri' => $callback,
+            'redirectUri' => $callback, // http_build_query will encode it correctly
             'state' => $state,
             'connect' => 1,
         ]);
-
 
         Log::info('SSO redirect URL', ['url' => $url]);
 
@@ -38,55 +38,65 @@ class SsoController extends Controller
 
     public function callback(Request $request)
     {
-        $expectedState = $request->session()->pull('sso_state');
-        $state = $request->query('state');
+        Log::info('SSO CALLBACK HIT', [
+            'fullUrl' => $request->fullUrl(),
+            'query' => $request->query(),
+            'session_id' => $request->session()->getId(),
+            'has_state_in_session' => $request->session()->has('sso_state'),
+        ]);
 
-        if (!$expectedState || !$state || !hash_equals($expectedState, $state)) {
-            abort(403, 'Invalid SSO state.');
+        // 1) Validate state
+        $expected = (string) $request->session()->pull('sso_state');
+        $state    = (string) $request->query('state', '');
+
+        if ($expected === '' || $state === '' || !hash_equals($expected, $state)) {
+            Log::warning('SSO state mismatch', [
+                'expected' => $expected ? 'exists' : 'missing',
+                'state' => $state,
+            ]);
+            abort(403, 'Invalid SSO state');
         }
 
-        // token could come as ?token=... (recommended)
-        $token = $request->query('token')
-            ?? $request->query('access_token')
-            ?? $request->query('jwt');
+        // 2) Get token (or code)
+        $token = (string) ($request->query('token') ?? $request->query('access_token') ?? '');
+        $code  = (string) $request->query('code', '');
 
+        if ($token === '' && $code !== '') $token = $code;
 
-        // If your SSO returns it as "#token=..." (hash fragment), Laravel can't see it.
-        // In that case you must change SSO to return query param OR add a small JS page to POST it.
-        if (!$token) {
-            abort(400, 'Missing token from SSO callback.');
+        if ($token === '') {
+            Log::warning('SSO callback missing token/code', ['query' => $request->query()]);
+            abort(400, 'Missing token');
         }
 
+        // 3) Probe token
         $probe = $this->probeToken($token);
-
-        // IMPORTANT: adapt to your real probe response shape
-        // Expect something like: { ok: true, user: { id, email, name, roles... } }
         if (!($probe['ok'] ?? false)) {
-            abort(401, 'SSO token invalid.');
+            Log::error('SSO token probe failed', ['probe' => $probe]);
+            abort(401, 'SSO token is invalid');
         }
 
-        $userData = $probe['user'] ?? null;
-        if (!$userData || empty($userData['email'])) {
-            abort(401, 'SSO user payload missing email.');
+        $profile = $probe['user'] ?? $probe['data'] ?? $probe;
+
+        $email = $profile['email'] ?? null;
+        if (!$email) {
+            Log::error('SSO profile missing email', ['profile' => $profile]);
+            abort(422, 'SSO profile missing email');
         }
 
-        // Create/update local user
+        $name = $profile['name'] ?? $profile['fullName'] ?? $profile['username'] ?? $email;
+
+        // 4) Create/update local user
         $user = User::updateOrCreate(
-            ['email' => $userData['email']],
-            [
-                'name' => $userData['name'] ?? ($userData['email']),
-                // store extra SSO info if you want:
-                // 'sso_id' => $userData['id'] ?? null,
-            ]
+            ['email' => $email],
+            ['name' => $name]
         );
 
-        Auth::login($user, remember: true);
-
-        // Store token in session if you need it for API calls
+        // 5) Login + regenerate session + store token
+        Auth::login($user, true);
+        $request->session()->regenerate();
         $request->session()->put('sso_token', $token);
-        $request->session()->put('sso_user', $userData);
 
-        return redirect()->intended('/dashboard');
+        return redirect()->route('dashboard');
     }
 
     public function logout(Request $request)
@@ -117,6 +127,7 @@ class SsoController extends Controller
             ]);
 
         if (!$res->successful()) {
+
             return [
                 'ok' => false,
                 'status' => $res->status(),

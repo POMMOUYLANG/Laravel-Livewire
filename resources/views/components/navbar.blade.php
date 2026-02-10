@@ -59,40 +59,60 @@
 
             <div class="divider divider-horizontal mx-0 hidden sm:flex h-8 self-center"></div>
 
-            {{-- User Profile Dropdown --}}
-            {{-- Right Section: User Profile Dropdown --}}
-            <div class="dropdown dropdown-bottom dropdown-end flex items-center">
-                <button type="button" id="dropdown-account"
-                    class="dropdown-toggle btn btn-ghost h-12 px-2 rounded-xl flex items-center gap-3"
-                    aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-                    <div class="avatar online">
-                        <div class="w-9 rounded-lg ring ring-primary ring-offset-base-100 ring-offset-1">
-                            <img src="https://ui-avatars.com/api/?name=Admin&background=random" alt="Admin" />
+            @php
+                $user = auth()->user();
+
+                $name = $user?->name ?: ($user?->email ?: 'Guest');
+
+                // ROLE: adjust depending on your DB
+                // Option A: if you use Spatie roles: $role = strtoupper($user->getRoleNames()->first() ?? 'USER');
+                // Option B: if you have column "role": $role = strtoupper($user->role ?? 'USER');
+                // Option C: if you have boolean is_admin:
+                $role = strtoupper($user?->role ?? ($user?->is_admin ? 'ADMIN' : 'USER'));
+
+                // Initials (TD)
+                $parts = preg_split('/\s+/', trim($name));
+                $initials = '';
+                foreach (array_slice($parts, 0, 2) as $p) {
+                    $initials .= mb_strtoupper(mb_substr($p, 0, 1));
+                }
+                $initials = $initials ?: 'U';
+            @endphp
+
+            <div class="dropdown dropdown-bottom dropdown-end">
+                <button type="button"
+                    class="dropdown-toggle btn btn-ghost h-12 px-3 rounded-xl flex items-center gap-3"
+                    aria-haspopup="menu" aria-expanded="false">
+
+                    <div class="avatar">
+                        <div
+                            class="w-9 rounded-xl ring ring-primary ring-offset-base-100 ring-offset-1 grid place-items-center bg-base-200">
+                            <span class="text-sm font-bold">{{ $initials }}</span>
                         </div>
                     </div>
-                    <div class="hidden lg:block text-left">
-                        <div class="text-sm font-bold leading-none text-white :hover:text-black">Admin User</div>
-                        <div class="text-[10px] opacity-50 font-medium uppercase tracking-wider">Super Admin</div>
+
+                    <div class="hidden sm:block text-left leading-tight">
+                        <div class="text-sm font-bold">{{ $name }}</div>
+                        <div class="text-[10px] opacity-60 font-semibold uppercase tracking-wider">{{ $role }}
+                        </div>
                     </div>
-                    <span class="icon-[tabler--chevron-down] text-xs opacity-50 hidden lg:block"></span>
+
+                    <span class="icon-[tabler--chevron-down] text-sm opacity-60"></span>
                 </button>
 
-                <ul class="dropdown-menu dropdown-open:opacity-100 hidden min-w-60 bg-base-100 shadow-xl rounded-2xl border border-base-200 p-2 mt-2"
-                    role="menu" aria-orientation="vertical" aria-labelledby="dropdown-account">
-                    <li class="px-4 py-2 mb-1">
-                        <p class="text-xs font-semibold uppercase tracking-widest opacity-40">Account</p>
+                <ul class="dropdown-menu dropdown-open:opacity-100 hidden min-w-56 bg-base-100 shadow-xl rounded-2xl border border-base-200 p-2 mt-2"
+                    role="menu">
+                    <li class="px-4 py-2">
+                        <div class="text-sm font-semibold">{{ $name }}</div>
+                        <div class="text-xs opacity-60">{{ $user?->email }}</div>
                     </li>
+
+                    <div class="divider my-1 opacity-50"></div>
+
                     <li>
                         <a class="dropdown-item flex items-center gap-3">
                             <span class="icon-[tabler--user-circle] text-lg"></span>
                             My Profile
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item flex items-center gap-3 rounded-lg py-2.5 px-4 hover:bg-base-200 transition-colors"
-                            href="#">
-                            <span class="icon-[tabler--credit-card] text-lg"></span>
-                            Billing
                         </a>
                     </li>
 
@@ -102,15 +122,16 @@
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"
-                                class="dropdown-item flex items-center gap-3 rounded-lg py-2.5 px-4 text-error hover:bg-error/10 transition-colors w-full text-left">
+                                class="dropdown-item flex items-center gap-3 w-full text-left text-error hover:bg-error/10">
                                 <span class="icon-[tabler--logout] text-lg"></span>
                                 Sign Out
                             </button>
                         </form>
-
                     </li>
                 </ul>
             </div>
+
+
         </div>
     </div>
 </nav>

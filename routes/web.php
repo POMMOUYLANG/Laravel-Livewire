@@ -11,30 +11,30 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Redirect root based on auth
+| Home (single / route)
 |--------------------------------------------------------------------------
 */
 
 Route::get('/', function () {
-    return auth()->check()
+    return Auth::check()
         ? redirect()->route('dashboard')
         : redirect()->route('login');
 })->name('home');
 
+
 /*
-|--------------------------------------------------------------------------
+|------------------------------------------------------------------
 | Guest routes
-|--------------------------------------------------------------------------
+|------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
     Route::get('/login', LoginPage::class)->name('login');
 
-    // SSO entry + callback MUST be reachable by guests
     Route::get('/sso/login', [SsoController::class, 'redirect'])->name('sso.login');
     Route::get('/sso/callback', [SsoController::class, 'callback'])->name('sso.callback');
-    Route::get('/sso/redirect', [SsoController::class, 'redirect'])->name('sso.redirect');
-    // Route::get('/sso/callback', [SsoController::class, 'callback'])->name('sso.callback');
 });
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -42,7 +42,6 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
 
     Route::get('/students', StudentsPage::class)->name('students.index');
@@ -57,6 +56,6 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('login');
     })->name('logout');
 
-    // Optional: if you want SSO logout too
+    // Optional: SSO logout too
     Route::post('/sso/logout', [SsoController::class, 'logout'])->name('sso.logout');
 });
