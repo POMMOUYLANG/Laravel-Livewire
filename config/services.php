@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'smis' => [
+        'base_url'      => env('SMIS_AUTH_BASE_URL', 'https://accounts.itc.edu.kh'),
+        'client_id'     => env('SMIS_CLIENT_ID'),
+        'client_secret' => env('SMIS_CLIENT_SECRET'),
+        'callback_url'  => env('SMIS_AUTH_CALLBACK_URL'),
+    ],
+
+
 ];

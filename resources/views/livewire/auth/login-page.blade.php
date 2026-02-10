@@ -17,6 +17,15 @@
                 </div>
             @endif
 
+            {{-- SSO  --}}
+            <button type="button" class="btn w-full" onclick="window.location='{{ route('sso.redirect') }}'">
+                Sign in with SSO
+            </button>
+
+
+            <div class="divider">or</div>
+
+
             <form wire:submit.prevent="login" class="space-y-4">
 
                 {{-- Email --}}
