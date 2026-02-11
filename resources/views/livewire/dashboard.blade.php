@@ -1,14 +1,5 @@
 <div class="p-4 lg:p-6 flex flex-col gap-6">
     {{-- Header Section --}}
-    <button onclick="window.smis.signIn()" class="btn btn-secondary">
-        Sync Session
-    </button>
-    {{-- This will now work because 'sso_username' was set in SsoController --}}
-    <div class="p-4">
-        <h1 class="text-xl font-bold">Welcome, {{ Auth::user()->name }}</h1>
-        <p>Username: {{ session('sso_username') }}</p>
-        <p>Email: {{ session('sso_email') }}</p>
-    </div>
 
 
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
