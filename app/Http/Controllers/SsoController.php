@@ -41,57 +41,58 @@ class SsoController extends Controller
         Log::info('SSO CALLBACK HIT', [
             'fullUrl' => $request->fullUrl(),
             'query' => $request->query(),
-            'session_id' => $request->session()->getId(),
-            'has_state_in_session' => $request->session()->has('sso_state'),
         ]);
 
         // 1) Validate state
         $expected = (string) $request->session()->pull('sso_state');
-        $state    = (string) $request->query('state', '');
+        $state = (string) $request->query('state', '');
 
         if ($expected === '' || $state === '' || !hash_equals($expected, $state)) {
-            Log::warning('SSO state mismatch', [
-                'expected' => $expected ? 'exists' : 'missing',
-                'state' => $state,
-            ]);
+            Log::warning('SSO state mismatch');
             abort(403, 'Invalid SSO state');
         }
 
-        // 2) Get token (or code)
-        $token = (string) ($request->query('token') ?? $request->query('access_token') ?? '');
-        $code  = (string) $request->query('code', '');
-
-        if ($token === '' && $code !== '') $token = $code;
+        // 2) Get token
+        $token = (string) ($request->query('token') ?? $request->query('access_token') ?? $request->query('code') ?? '');
 
         if ($token === '') {
-            Log::warning('SSO callback missing token/code', ['query' => $request->query()]);
             abort(400, 'Missing token');
         }
 
-        // 3) Probe token
-        $probe = $this->probeToken($token);
-        if (!($probe['ok'] ?? false)) {
-            Log::error('SSO token probe failed', ['probe' => $probe]);
-            abort(401, 'SSO token is invalid');
+        // 3) Extract User Data (Decoding + Probing)
+        $username = 'User';
+        $email = null;
+
+        // Try decoding JWT first
+        $parts = explode('.', $token);
+        if (count($parts) === 3) {
+            $payload = json_decode(base64_decode($parts[1]), true);
+            $username = $payload['username'] ?? $payload['name'] ?? 'User';
+            $email = $payload['email'] ?? null;
         }
 
-        $profile = $probe['user'] ?? $probe['data'] ?? $probe;
-
-        $email = $profile['email'] ?? null;
+        // Fallback: Use Probe if email is missing from JWT
         if (!$email) {
-            Log::error('SSO profile missing email', ['profile' => $profile]);
+            $probe = $this->probeToken($token);
+            if ($probe['ok'] ?? false) {
+                $profile = $probe['user'] ?? $probe['data'] ?? $probe;
+                $email = $profile['email'] ?? null;
+                $username = $profile['username'] ?? $profile['name'] ?? $username;
+            }
+        }
+
+        if (!$email) {
+            Log::error('SSO profile missing email');
             abort(422, 'SSO profile missing email');
         }
 
-        $name = $profile['name'] ?? $profile['fullName'] ?? $profile['username'] ?? $email;
-
         // 4) Create/update local user
-        $user = User::updateOrCreate(
+        $user = \App\Models\User::updateOrCreate(
             ['email' => $email],
-            ['name' => $name]
+            ['name' => $username]
         );
 
-        // 5) Login + regenerate session + store token
+        // 5) Final Login
         Auth::login($user, true);
         $request->session()->regenerate();
         $request->session()->put('sso_token', $token);

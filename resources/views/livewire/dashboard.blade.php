@@ -1,6 +1,13 @@
 <div class="p-4 lg:p-6 flex flex-col gap-6">
     {{-- Header Section --}}
+    <button onclick="window.smis.signIn()" class="btn btn-secondary">
+        Sync Session
+    </button>
+
+
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+
         <div>
             <h1 class="text-2xl font-bold tracking-tight">Dashboard Overview</h1>
             <p class="text-sm opacity-60">Welcome back, Admin. Here is what's happening today.</p>

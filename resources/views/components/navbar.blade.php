@@ -61,22 +61,16 @@
 
             @php
                 $user = auth()->user();
-
-                $name = $user?->name ?: ($user?->email ?: 'Guest');
-
-                // ROLE: adjust depending on your DB
-                // Option A: if you use Spatie roles: $role = strtoupper($user->getRoleNames()->first() ?? 'USER');
-                // Option B: if you have column "role": $role = strtoupper($user->role ?? 'USER');
-                // Option C: if you have boolean is_admin:
+                $name = $user?->name ?? ($user?->email ?? 'Guest');
                 $role = strtoupper($user?->role ?? ($user?->is_admin ? 'ADMIN' : 'USER'));
 
-                // Initials (TD)
-                $parts = preg_split('/\s+/', trim($name));
-                $initials = '';
-                foreach (array_slice($parts, 0, 2) as $p) {
-                    $initials .= mb_strtoupper(mb_substr($p, 0, 1));
-                }
-                $initials = $initials ?: 'U';
+                // Correct Initials Logic
+                $initials =
+                    collect(preg_split('/\s+/', trim($name)))
+                        ->take(2)
+                        ->map(fn($part) => mb_strtoupper(mb_substr($part, 0, 1)))
+                        ->join('') ?:
+                    'G';
             @endphp
 
             <div class="dropdown dropdown-bottom dropdown-end">

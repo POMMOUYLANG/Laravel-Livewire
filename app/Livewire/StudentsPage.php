@@ -8,7 +8,7 @@ use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.app')]
+#[Layout('components.layouts.app')]
 class StudentsPage extends Component
 {
     public string $search = '';

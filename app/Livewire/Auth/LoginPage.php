@@ -7,7 +7,7 @@ use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
-#[Layout('layouts.guest')]
+#[Layout('components.layouts.app')]
 class LoginPage extends Component
 {
     public string $email = '';
@@ -16,19 +16,17 @@ class LoginPage extends Component
 
     public function mount()
     {
+        // If we are already authenticated in Laravel, go to dashboard
         if (Auth::check()) {
             $this->redirectRoute('dashboard', navigate: true);
         }
-        // Do nothing if guest -> show login page
     }
-
-
 
     public function login(): void
     {
         $credentials = $this->validate([
             'email'    => ['required', 'email'],
-            'password' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string'],
         ]);
 
         if (! Auth::attempt($credentials, $this->remember)) {

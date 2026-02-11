@@ -7,7 +7,7 @@ use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\WithPagination;
 
-#[Layout('layouts.app')]
+#[Layout('components.layouts.app')]
 class PostPage extends Component
 {
     use WithPagination;
