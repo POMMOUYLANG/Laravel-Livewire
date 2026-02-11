@@ -3,6 +3,8 @@
     <button onclick="window.smis.signIn()" class="btn btn-secondary">
         Sync Session
     </button>
+    <p>Username: {{ session('sso_username') }}</p>
+    <p>Email: {{ session('sso_email') }}</p>
 
 
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">

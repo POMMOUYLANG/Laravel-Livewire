@@ -26,6 +26,13 @@
 
     @livewireScripts
 
+    {{-- SSO Login Button --}}
+    <div class="fixed bottom-4 right-4">
+        <button id="sso-login" class="px-4 py-2 bg-blue-600 text-white rounded shadow">
+            Login with SMIS
+        </button>
+    </div>
+
     {{-- 1️⃣ Token Persistence --}}
     <script>
         document.addEventListener('livewire:init', () => {
@@ -36,24 +43,46 @@
         });
     </script>
 
-    {{-- 2️⃣ Proper ES Module Import --}}
+    <div class="sync-session mb-4">
+        <button id="sso-login" class="px-4 py-2 bg-blue-600 text-white rounded shadow">
+            Sync Session
+        </button>
+    </div>
+
     <script type="module">
         import {
             AuthClient
         } from "{{ asset('vendor/smis-sso/sso-client/sso-client.js') }}";
 
-        const baseUrl = "{{ config('smis-sso.auth_base_url') }}";
-
-        console.log("SMIS base_url =", baseUrl);
-
         const smisClient = new AuthClient({
             appKey: "{{ config('smis-sso.app_key') }}",
-            authBaseUrl: baseUrl
+            authBaseUrl: "{{ config('smis-sso.auth_base_url') }}"
         });
 
         window.smis = smisClient;
-    </script>
 
+        document.getElementById('sso-login').addEventListener('click', async () => {
+            try {
+                const user = await smisClient.user({
+                    force: true
+                });
+                console.log("SSO User:", user);
+
+                // Update UI
+                document.querySelector('.sync-session').innerHTML = `
+            <p>Username: ${user.username}</p>
+            <p>Email: ${user.email || user.username + '@itc.edu.kh'}</p>
+        `;
+
+                // Store locally
+                localStorage.setItem('sso_username', user.username);
+                localStorage.setItem('sso_email', user.email || `${user.username}@itc.edu.kh`);
+            } catch (err) {
+                console.error("SSO login failed:", err);
+                alert("SSO login failed. Check console for details.");
+            }
+        });
+    </script>
 
 
 </body>

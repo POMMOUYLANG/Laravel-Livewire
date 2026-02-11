@@ -11,12 +11,16 @@ return [
 
     'clock_skew' => 120,
     'user_resolver' => function (array $tokenInfo) {
-        $email = $tokenInfo['email'] ?? ($tokenInfo['username'] . '@itc.edu.kh');
+        $username = $tokenInfo['username'] ?? 'sso_user';
+        $email = $tokenInfo['email'] ?? "{$username}@itc.edu.kh";
+
+        // Store in Laravel session if needed
+        session(['sso_username' => $username, 'sso_email' => $email]);
 
         return \App\Models\User::updateOrCreate(
             ['email' => $email],
             [
-                'name' => $tokenInfo['name'] ?? $tokenInfo['username'] ?? 'SSO User',
+                'name' => $tokenInfo['name'] ?? $username,
                 'password' => bcrypt(Str::random(16)),
             ]
         );
