@@ -61,10 +61,17 @@
 
             @php
                 $user = auth()->user();
-                $name = $user?->name ?? ($user?->email ?? 'Guest');
+
+                // 1. Get Name: Try SSO session first, then DB name, then fallback to Guest
+                $name = session('sso_username', $user?->name ?? 'Guest');
+
+                // 2. Get Email: Try SSO session first, then DB email
+                $email = session('sso_email', $user?->email ?? 'no-email@itc.edu.kh');
+
+                // 3. Get Role: Standardize the display
                 $role = strtoupper($user?->role ?? ($user?->is_admin ? 'ADMIN' : 'USER'));
 
-                // Correct Initials Logic
+                // 4. Correct Initials Logic (e.g., "Admin Istrator" -> "AI")
                 $initials =
                     collect(preg_split('/\s+/', trim($name)))
                         ->take(2)

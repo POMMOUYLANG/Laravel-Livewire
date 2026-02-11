@@ -141,4 +141,34 @@ class SsoController extends Controller
             'body' => $res->body(),
         ];
     }
+
+    public function sync(Request $request)
+    {
+        // 1. Validate the incoming JS data
+        $userData = $request->validate([
+            'userId'   => 'required',
+            'username' => 'required|string',
+        ]);
+
+        // 2. Map SSO user to your local 'users' table
+        // We use email/username to find them. If they don't exist, we create them.
+        $user = User::updateOrCreate(
+            ['email' => $userData['username']], // Or use a dedicated sso_id column
+            [
+                'name'     => $userData['username'],
+                'password' => bcrypt(Str::random(16)), // Required field, but not used for SSO
+            ]
+        );
+
+        // 3. Log the user into Laravel Auth
+        Auth::login($user);
+
+        // 4. Store the display info in the session
+        session([
+            'sso_username' => $userData['username'],
+            'sso_email'    => $request->email ?? ($userData['username'] . '@itc.edu.kh'),
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }

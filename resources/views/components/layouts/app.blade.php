@@ -66,20 +66,28 @@
                 const user = await smisClient.user({
                     force: true
                 });
-                console.log("SSO User:", user);
+                console.log("SSO User Data captured:", user);
 
-                // Update UI
-                document.querySelector('.sync-session').innerHTML = `
-            <p>Username: ${user.username}</p>
-            <p>Email: ${user.email || user.username + '@itc.edu.kh'}</p>
-        `;
+                const response = await fetch("{{ route('sso.sync') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(user)
+                });
 
-                // Store locally
-                localStorage.setItem('sso_username', user.username);
-                localStorage.setItem('sso_email', user.email || `${user.username}@itc.edu.kh`);
+                if (response.ok) {
+                    // Once the PHP session is set, redirect to dashboard
+                    // This will make session('sso_username') available to Blade
+                    window.location.href = "{{ route('dashboard') }}";
+                } else {
+                    const errorData = await response.json();
+                    console.error("Sync failed:", errorData);
+                }
             } catch (err) {
                 console.error("SSO login failed:", err);
-                alert("SSO login failed. Check console for details.");
             }
         });
     </script>

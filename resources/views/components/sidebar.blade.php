@@ -94,17 +94,29 @@
 
         </ul>
 
-        {{-- Bottom Profile Card (Optional but looks great) --}}
+        {{-- Bottom Profile Card --}}
         <div class="absolute bottom-4 left-0 w-full px-4">
-            <div class="p-3 rounded-xl bg-base-200/50 flex items-center gap-3">
+            <div class="p-3 rounded-xl bg-base-200/50 flex items-center gap-3 border border-base-300/50">
                 <div class="avatar">
-                    <div class="w-8 rounded-lg">
-                        <img src="https://ui-avatars.com/api/?name=Admin" alt="Admin" />
+                    <div
+                        class="w-8 rounded-lg bg-primary/20 text-primary grid place-items-center font-bold text-[10px]">
+                        @php
+                            $sidebarName = session('sso_username', auth()->user()->name ?? 'G');
+                            $sidebarInitials = collect(explode(' ', $sidebarName))
+                                ->map(fn($n) => substr($n, 0, 1))
+                                ->take(2)
+                                ->join('');
+                        @endphp
+                        {{ $sidebarInitials }}
                     </div>
                 </div>
                 <div class="overflow-hidden">
-                    <p class="text-xs font-bold truncate">Admin User</p>
-                    <p class="text-[10px] opacity-50 truncate">admin@school.com</p>
+                    <p class="text-xs font-bold truncate">
+                        {{ session('sso_username', auth()->user()->name ?? 'Guest User') }}
+                    </p>
+                    <p class="text-[10px] opacity-50 truncate">
+                        {{ session('sso_email', auth()->user()->email ?? 'guest@itc.edu.kh') }}
+                    </p>
                 </div>
             </div>
         </div>

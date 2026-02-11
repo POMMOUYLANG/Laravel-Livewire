@@ -27,6 +27,9 @@ Route::get('/', function () {
 | Guest routes
 |------------------------------------------------------------------
 */
+
+Route::post('/sso/sync', [SsoController::class, 'sync'])->name('sso.sync');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', LoginPage::class)->name('login');
 
