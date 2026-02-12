@@ -35,10 +35,28 @@
 
     {{-- 1️⃣ Token Persistence --}}
     <script>
-        document.addEventListener('livewire:init', () => {
-            const token = "{{ session('sso_token') }}";
-            if (token) {
-                localStorage.setItem('accessToken', token);
+        document.addEventListener('smis-session:ready', async (event) => {
+            const ssoData = event.detail; // Contains accessToken, user info, etc.
+
+            if (ssoData.accessToken) {
+                // 1. Store token locally for the JS client
+                localStorage.setItem('accessToken', ssoData.accessToken);
+
+                // 2. Sync with Laravel Server to bootstrap PHP Session
+                const response = await fetch("{{ route('sso.sync') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(ssoData)
+                });
+
+                if (response.ok) {
+                    console.log("Laravel session synchronized");
+                    // Optional: refresh if you need server-side auth immediately
+                    // window.location.reload();
+                }
             }
         });
     </script>
