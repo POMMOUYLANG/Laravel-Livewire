@@ -26,41 +26,6 @@
 
     @livewireScripts
 
-    {{-- SSO Login Button --}}
-    <div class="fixed bottom-4 right-4">
-        <button id="sso-login" class="px-4 py-2 bg-blue-600 text-white rounded shadow">
-            Login with SMIS
-        </button>
-    </div>
-
-    {{-- 1️⃣ Token Persistence --}}
-    <script>
-        document.addEventListener('smis-session:ready', async (event) => {
-            const ssoData = event.detail; // Contains accessToken, user info, etc.
-
-            if (ssoData.accessToken) {
-                // 1. Store token locally for the JS client
-                localStorage.setItem('accessToken', ssoData.accessToken);
-
-                // 2. Sync with Laravel Server to bootstrap PHP Session
-                const response = await fetch("{{ route('sso.sync') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify(ssoData)
-                });
-
-                if (response.ok) {
-                    console.log("Laravel session synchronized");
-                    // Optional: refresh if you need server-side auth immediately
-                    // window.location.reload();
-                }
-            }
-        });
-    </script>
-
     <div class="sync-session mb-4">
         <button id="sso-login" class="px-4 py-2 bg-blue-600 text-white rounded shadow">
             Sync Session

@@ -1,143 +1,117 @@
-<div class="p-4 lg:p-6 flex flex-col gap-6">
-    {{-- Header Section --}}
+<div class="p-6 space-y-8">
 
-
+    {{-- HEADER --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-
-
         <div>
-            <h1 class="text-2xl font-bold tracking-tight">Dashboard Overview</h1>
-            <p class="text-sm opacity-60">Welcome back, Admin. Here is what's happening today.</p>
+            <h1 class="text-3xl font-bold tracking-tight">
+                Welcome back, {{ (string) $user->name }}
+            </h1>
+            <p class="text-sm opacity-60">
+                {{ (string) $user->email }}
+            </p>
         </div>
-        <div class="flex items-center gap-2">
-            <button class="btn btn-outline btn-sm gap-2">
-                <span class="icon-[tabler--download] text-lg"></span>
-                Export Report
-            </button>
-            <button class="btn btn-primary btn-sm gap-2 shadow-md shadow-primary/20">
-                <span class="icon-[tabler--plus] text-lg"></span>
-                New Enrollment
-            </button>
+
+        <div class="flex flex-wrap gap-2">
+            @forelse($roles as $role)
+                <span class="badge badge-primary badge-sm">
+                    {{-- FIX: Handle potential nested role arrays --}}
+                    {{ is_array($role) ? implode(', ', $role) : (string) $role }}
+                </span>
+            @empty
+                <span class="badge badge-error badge-sm">No Role Assigned</span>
+            @endforelse
         </div>
     </div>
 
-    {{-- Stats Grid --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="card bg-base-100 border border-base-200 shadow-sm">
-            <div class="card-body p-5 flex-row items-center gap-4">
-                <div class="btn btn-circle btn-primary btn-soft no-animation cursor-default">
-                    <span class="icon-[tabler--users] text-2xl"></span>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold opacity-60 uppercase tracking-wider">Total Students</p>
-                    <h3 class="text-2xl font-bold">1,284</h3>
-                </div>
+    {{-- STATS CARDS --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card bg-base-100 shadow-md border border-base-200">
+            <div class="card-body">
+                <h2 class="text-sm opacity-60 font-bold uppercase tracking-widest">Total Roles</h2>
+                <div class="text-3xl font-bold text-primary">{{ count($roles) }}</div>
             </div>
         </div>
 
-        <div class="card bg-base-100 border border-base-200 shadow-sm">
-            <div class="card-body p-5 flex-row items-center gap-4">
-                <div class="btn btn-circle btn-secondary btn-soft no-animation cursor-default">
-                    <span class="icon-[tabler--news] text-2xl"></span>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold opacity-60 uppercase tracking-wider">Active Posts</p>
-                    <h3 class="text-2xl font-bold">42</h3>
-                </div>
+        <div class="card bg-base-100 shadow-md border border-base-200">
+            <div class="card-body">
+                <h2 class="text-sm opacity-60 font-bold uppercase tracking-widest">Branches</h2>
+                <div class="text-3xl font-bold text-secondary">{{ count($context['branches'] ?? []) }}</div>
             </div>
         </div>
 
-        <div class="card bg-base-100 border border-base-200 shadow-sm">
-            <div class="card-body p-5 flex-row items-center gap-4">
-                <div class="btn btn-circle btn-success btn-soft no-animation cursor-default">
-                    <span class="icon-[tabler--school] text-2xl"></span>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold opacity-60 uppercase tracking-wider">Attendance</p>
-                    <h3 class="text-2xl font-bold">98.2%</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="card bg-base-100 border border-base-200 shadow-sm">
-            <div class="card-body p-5 flex-row items-center gap-4">
-                <div class="btn btn-circle btn-info btn-soft no-animation cursor-default">
-                    <span class="icon-[tabler--calendar-event] text-2xl"></span>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold opacity-60 uppercase tracking-wider">Events</p>
-                    <h3 class="text-2xl font-bold">12</h3>
+        <div class="card bg-base-100 shadow-md border border-base-200">
+            <div class="card-body">
+                <h2 class="text-sm opacity-60 font-bold uppercase tracking-widest">Departments</h2>
+                <div class="text-3xl font-bold text-accent">
+                    {{ collect($context['branches'] ?? [])->flatMap(fn($b) => $b['departments'] ?? [])->count() }}
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Main Content: Recent Activity & Quick Actions --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- Recent Students Table --}}
-        <div class="card bg-base-100 border border-base-200 shadow-sm lg:col-span-2">
-            <div class="card-header flex items-center justify-between p-5 border-b border-base-200">
-                <h2 class="text-lg font-bold">Recently Joined Students</h2>
-                <a href="/students" class="btn btn-link btn-xs no-underline">View All</a>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="table table-zebra">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Class</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="flex items-center gap-3">
-                                    <div class="avatar placeholder">
-                                        <div class="bg-neutral text-neutral-content w-8 rounded-full">
-                                            <span class="text-xs">JS</span>
+    {{-- ORGANIZATION CONTEXT --}}
+    <div class="card bg-base-100 shadow-lg border border-base-200">
+        <div class="card-body">
+            <h2 class="card-title text-xl flex items-center gap-2">
+                <span class="icon-[tabler--hierarchy-2] text-primary"></span>
+                Organization Structure
+            </h2>
+
+            @if (!empty($context['branches']))
+                <div class="space-y-6 mt-4">
+                    @foreach ($context['branches'] as $branch)
+                        <div class="p-4 rounded-xl bg-base-200/50 border border-base-300">
+                            <h3 class="font-bold text-primary text-lg flex items-center gap-2">
+                                <span class="icon-[tabler--building]"></span>
+                                {{ is_array($branch['branch'] ?? null) ? 'Invalid Branch Data' : $branch['branch'] ?? 'Default Branch' }}
+                            </h3>
+
+                            <div class="mt-4 space-y-3">
+                                @foreach ($branch['departments'] ?? [] as $dept)
+                                    <div class="p-3 bg-base-100 rounded-lg border border-base-200">
+                                        <div class="font-semibold text-sm flex items-center gap-2">
+                                            <span class="icon-[tabler--armchair] opacity-40"></span>
+                                            {{ is_array($dept['department'] ?? null) ? 'Invalid Dept Data' : $dept['department'] ?? 'General Department' }}
+                                        </div>
+
+                                        <div class="flex flex-wrap gap-2 mt-2 ml-6">
+                                            @foreach ($dept['roles'] ?? [] as $deptRole)
+                                                <span class="badge badge-outline badge-xs opacity-70">
+                                                    {{-- FIX: Ensure deptRole is not an array --}}
+                                                    {{ is_array($deptRole) ? implode(', ', $deptRole) : (string) $deptRole }}
+                                                </span>
+                                            @endforeach
                                         </div>
                                     </div>
-                                    <div class="text-sm font-semibold">John Smith</div>
-                                </div>
-                            </td>
-                            <td><span class="badge badge-outline badge-sm">10A</span></td>
-                            <td><span class="badge badge-success badge-xs badge-soft">Active</span></td>
-                            <td><button class="btn btn-ghost btn-xs btn-square"><span
-                                        class="icon-[tabler--eye]"></span></button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="alert alert-warning mt-4 rounded-xl border-none shadow-sm">
+                    <span class="icon-[tabler--alert-triangle]"></span>
+                    No organization context assigned.
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- QUICK ACTIONS --}}
+    <div class="flex justify-between items-center bg-base-100 p-6 rounded-2xl border border-base-200 shadow-sm">
+        <div>
+            <h2 class="text-xl font-bold tracking-tight">Quick Actions</h2>
+            <p class="text-sm opacity-60">Manage your students and system reports</p>
         </div>
 
-        {{-- Performance Chart / Quick Info --}}
-        <div class="card bg-base-100 border border-base-200 shadow-sm">
-            <div class="card-body">
-                <h2 class="text-lg font-bold mb-4">Quick Insights</h2>
-                <div class="space-y-4">
-                    <div class="flex flex-col gap-2">
-                        <div class="flex justify-between text-sm">
-                            <span>Post Engagement</span>
-                            <span class="font-bold">75%</span>
-                        </div>
-                        <progress class="progress progress-primary w-full" value="75" max="100"></progress>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <div class="flex justify-between text-sm">
-                            <span>Storage Used</span>
-                            <span class="font-bold">40%</span>
-                        </div>
-                        <progress class="progress progress-secondary w-full" value="40" max="100"></progress>
-                    </div>
-                </div>
-                <div class="divider my-4"></div>
-                <button class="btn btn-block btn-ghost border-dashed border-2 h-20 flex-col gap-1">
-                    <span class="icon-[tabler--cloud-upload] text-2xl opacity-40"></span>
-                    <span class="text-xs opacity-50 font-medium">Click to upload quick files</span>
+        <div class="flex gap-2">
+            {{-- Use the flat permissions array extracted in the Livewire component --}}
+            @if (in_array('enrollment.create', $permissions))
+                <button class="btn btn-primary btn-sm rounded-lg shadow-md shadow-primary/20 gap-2">
+                    <span class="icon-[tabler--plus] text-lg"></span>
+                    New Enrollment
                 </button>
-            </div>
+            @endif
         </div>
     </div>
 </div>

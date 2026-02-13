@@ -11,19 +11,14 @@
 
         'clock_skew' => 120,
         'user_resolver' => function (array $tokenInfo) {
+            // The SSO Gateway profile typically contains 'email'
             $email = $tokenInfo['email'] ?? null;
-
-            // Store extra SSO details in Laravel Session
-            session([
-                'sso_token' => request()->bearerToken(), // or from $tokenInfo if provided
-                'sso_username' => $tokenInfo['username'] ?? 'user',
-                'sso_email' => $email,
-            ]);
+            $name = $tokenInfo['displayName'] ?? ($tokenInfo['name'] ?? $tokenInfo['username']);
 
             return \App\Models\User::updateOrCreate(
-                ['email' => $email],
+                ['email' => $email], // Always search by the actual email
                 [
-                    'name' => $tokenInfo['name'] ?? $tokenInfo['username'],
+                    'name' => $name,
                     'password' => bcrypt(Str::random(16)),
                 ]
             );

@@ -1,104 +1,76 @@
-<div class="min-h-screen grid place-items-center bg-base-200 p-4">
-    <div class="card w-full max-w-md bg-base-100 shadow-lg border border-base-200">
-        <div class="card-body space-y-4">
+<div class="min-h-screen flex items-center justify-center bg-base-200 p-4">
+    <livewire:smis-sso::smis-session />
+
+    <div class="card w-full max-w-md bg-base-100 shadow-xl border border-base-200">
+        <div class="card-body space-y-4 text-center">
             <div class="space-y-1">
                 <h1 class="text-2xl font-bold">Sign in</h1>
-                <p class="text-sm opacity-70">Login with your email and password</p>
+                <p class="text-sm opacity-70">Please authenticate to continue</p>
             </div>
 
-            {{-- Global error (optional) --}}
-            @if ($errors->has('email') && str_contains($errors->first('email'), 'credentials'))
-                <div class="alert alert-error">
-                    <span class="icon-[tabler--alert-triangle] text-lg"></span>
-                    <div>
-                        <div class="font-semibold">Login failed</div>
-                        <div class="text-sm opacity-80">Please check your details and try again.</div>
-                    </div>
-                </div>
-            @endif
-
-            {{-- SSO  --}}
-            <a href="{{ route('sso.login') }}" class="btn w-full btn-neutral">
+            <button id="sso-login-btn" class="btn w-full btn-neutral">
+                <span class="icon-[tabler--shield-lock] text-lg"></span>
                 Sign in with SSO
-            </a>
+            </button>
 
-            {{-- optional message --}}
-            <div class="mt-3 text-sm opacity-70">
-                Please use SSO to sign in.
+            <div id="sso-error-area" class="hidden mt-4 alert alert-error text-xs text-left">
+                <div class="flex flex-col">
+                    <span id="error-msg" class="font-bold"></span>
+                    <pre id="error-debug" class="mt-2 opacity-70 overflow-auto max-h-32"></pre>
+                </div>
             </div>
-
-            <div class="divider">or</div>
-
-            <form wire:submit.prevent="login" class="space-y-4">
-
-                {{-- Email --}}
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">Email</span>
-                    </label>
-
-                    <label class="input input-bordered flex items-center gap-2">
-                        <span class="icon-[tabler--mail] text-lg opacity-70"></span>
-                        <input type="email" class="grow" placeholder="you@example.com" wire:model.live="email"
-                            autocomplete="email" />
-                    </label>
-
-                    @error('email')
-                        <label class="label">
-                            <span class="label-text-alt text-error">{{ $message }}</span>
-                        </label>
-                    @enderror
-                </div>
-
-                {{-- Password --}}
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">Password</span>
-                    </label>
-
-                    <label class="input input-bordered flex items-center gap-2">
-                        <span class="icon-[tabler--lock] text-lg opacity-70"></span>
-
-                        <input id="login-password" type="password" class="grow" placeholder="••••••••"
-                            wire:model.live="password" autocomplete="current-password" />
-
-                        <button type="button" class="btn btn-ghost btn-xs"
-                            onclick="const i=document.getElementById('login-password'); i.type = (i.type === 'password' ? 'text' : 'password');"
-                            aria-label="Toggle password">
-                            <span class="icon-[tabler--eye] text-lg"></span>
-                        </button>
-                    </label>
-
-                    @error('password')
-                        <label class="label">
-                            <span class="label-text-alt text-error">{{ $message }}</span>
-                        </label>
-                    @enderror
-                </div>
-
-                {{-- Remember me --}}
-                <div class="flex items-center justify-between">
-                    <label class="label cursor-pointer gap-3 p-0">
-                        <input type="checkbox" class="checkbox" wire:model="remember" />
-                        <span class="label-text">Remember me</span>
-                    </label>
-
-                    {{-- If you have forgot-password route, enable this --}}
-                    {{-- <a class="link link-hover text-sm" href="{{ route('password.request') }}">Forgot password?</a> --}}
-                </div>
-
-                <button class="btn btn-primary w-full" type="submit" wire:loading.attr="disabled">
-                    <span class="icon-[tabler--login-2] text-lg"></span>
-                    <span wire:loading.remove>Sign in</span>
-                    <span wire:loading>Signing in...</span>
-                </button>
-            </form>
-
-            {{-- Optional: register link --}}
-            {{-- <p class="text-center text-sm opacity-70">
-                Don’t have an account?
-                <a class="link link-primary" href="{{ route('register') }}">Create one</a>
-            </p> --}}
         </div>
     </div>
 </div>
+
+<script type="module">
+    import {
+        AuthClient
+    } from "{{ asset('vendor/smis-sso/sso-client/sso-client.js') }}";
+
+    const smisClient = new AuthClient({
+        appKey: @js(config('smis-sso.app_key')),
+        authBaseUrl: @js(config('smis-sso.auth_base_url'))
+    });
+
+    const ssoBtn = document.getElementById('sso-login-btn');
+
+    if (ssoBtn) {
+        ssoBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            ssoBtn.classList.add('loading');
+
+            try {
+                // Triggers popup only on click
+                const session = await smisClient.signIn({
+                    force: true
+                });
+
+                if (session?.accessToken) {
+                    const response = await fetch("{{ route('smis.auth.store') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json', // Prevents SyntaxError crash
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        },
+                        body: JSON.stringify({
+                            accessToken: session.accessToken,
+                            refreshToken: session.refreshToken // Pass for Gateway logout
+                        })
+                    });
+
+                    if (response.ok) {
+                        window.location.href = "{{ route('dashboard') }}";
+                    } else {
+                        const err = await response.json();
+                        throw new Error(err.message);
+                    }
+                }
+            } catch (err) {
+                alert(err.message + ". Please enable popups.");
+                ssoBtn.classList.remove('loading');
+            }
+        });
+    }
+</script>

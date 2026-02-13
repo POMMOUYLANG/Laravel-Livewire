@@ -18,21 +18,20 @@ class SsoController extends Controller
         $state = Str::random(40);
         $request->session()->put('sso_state', $state);
 
-        $base = config('sso.base_url');
-        $appKey = config('sso.app_key');
-        $callback = config('sso.callback_url');
+        $base = config('smis-sso.auth_base_url');
+        $appKey = config('smis-sso.app_key');
+        $callback = env('SMIS_AUTH_CALLBACK_URL');
 
-        $loginPath = config('sso.login_path');
-        $url = $base . $loginPath . '?' . http_build_query([
+        // In SsoController.php
+        $url = $base . '/sso/login?' . http_build_query([
             'appKey' => $appKey,
-            'redirectUri' => $callback, // http_build_query will encode it correctly
+            'redirectUri' => $callback,
             'state' => $state,
             'connect' => 1,
+            'scope' => 'openid profile email', // Ensure 'email' is included here
         ]);
 
-        Log::info('SSO redirect URL', ['url' => $url]);
-
-
+        Log::info('SSO redirect initiated', ['url' => $url]);
         return redirect()->away($url);
     }
 
@@ -43,7 +42,7 @@ class SsoController extends Controller
             'query' => $request->query(),
         ]);
 
-        // 1) Validate state
+        // 1️⃣ Validate state
         $expected = (string) $request->session()->pull('sso_state');
         $state = (string) $request->query('state', '');
 
@@ -52,28 +51,34 @@ class SsoController extends Controller
             abort(403, 'Invalid SSO state');
         }
 
-        // 2) Get token
-        $token = (string) ($request->query('token') ?? $request->query('access_token') ?? $request->query('code') ?? '');
+        // 2️⃣ Get token
+        $token = (string) (
+            $request->query('token')
+            ?? $request->query('access_token')
+            ?? $request->query('code')
+            ?? ''
+        );
 
         if ($token === '') {
             abort(400, 'Missing token');
         }
 
-        // 3) Extract User Data (Decoding + Probing)
+        // 3️⃣ Decode JWT
         $username = 'User';
         $email = null;
 
-        // Try decoding JWT first
         $parts = explode('.', $token);
+
         if (count($parts) === 3) {
             $payload = json_decode(base64_decode($parts[1]), true);
             $username = $payload['username'] ?? $payload['name'] ?? 'User';
             $email = $payload['email'] ?? null;
         }
 
-        // Fallback: Use Probe if email is missing from JWT
+        // 4️⃣ Fallback probe if needed
         if (!$email) {
             $probe = $this->probeToken($token);
+
             if ($probe['ok'] ?? false) {
                 $profile = $probe['user'] ?? $probe['data'] ?? $probe;
                 $email = $profile['email'] ?? null;
@@ -86,13 +91,13 @@ class SsoController extends Controller
             abort(422, 'SSO profile missing email');
         }
 
-        // 4) Create/update local user
-        $user = \App\Models\User::updateOrCreate(
+        // 5️⃣ Create / update user
+        $user = User::updateOrCreate(
             ['email' => $email],
             ['name' => $username]
         );
 
-        // 5) Final Login
+        // 6️⃣ Login
         Auth::login($user, true);
         $request->session()->regenerate();
         $request->session()->put('sso_token', $token);
@@ -102,33 +107,34 @@ class SsoController extends Controller
 
     public function logout(Request $request)
     {
-        $token = $request->session()->pull('sso_token');
+        // Clear SSO specific stuff
+        $request->session()->forget(['sso_token', 'sso_username', 'sso_email']);
 
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Optional: also log out from SSO side if they have an endpoint
-        // return redirect()->away(config('sso.base_url').'/sso/logout?redirectUri='.urlencode(config('sso.logout_redirect')));
+        // Use the redirect defined in your package config
+        $redirectUrl = config('smis-sso.auth_logout_redirect', '/login');
 
-        return redirect(config('sso.logout_redirect'));
+        return redirect($redirectUrl);
     }
 
     private function probeToken(string $token): array
     {
-        $base = rtrim(config('sso.base_url'), '/');
-        $appKey = config('sso.app_key');
+        $base = rtrim(config('smis-sso.auth_base_url'), '/');
+        $appKey = config('smis-sso.app_key');
 
         /** @var Response $res */
         $res = Http::timeout(10)
             ->acceptJson()
             ->withToken($token)
-            ->get($base . '/sso/probe', [
+            ->get($base . config('smis-sso.probe_path'), [
                 'appKeyParam' => $appKey,
             ]);
 
         if (!$res->successful()) {
-
             return [
                 'ok' => false,
                 'status' => $res->status(),
@@ -142,33 +148,41 @@ class SsoController extends Controller
         ];
     }
 
+    // app/Http/Controllers/SsoController.php
     public function sync(Request $request)
     {
-        // 1. Validate the incoming JS data
-        $userData = $request->validate([
-            'userId'   => 'required',
-            'username' => 'required|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'email'    => 'required|email',
+                'userId'   => 'required',
+                'username' => 'required|string',
+                'roles'    => 'nullable|array',
+                'context'  => 'nullable|array' // New field
+            ]);
 
-        // 2. Map SSO user to your local 'users' table
-        // We use email/username to find them. If they don't exist, we create them.
-        $user = User::updateOrCreate(
-            ['email' => $userData['username']], // Or use a dedicated sso_id column
-            [
-                'name'     => $userData['username'],
-                'password' => bcrypt(Str::random(16)), // Required field, but not used for SSO
-            ]
-        );
+            $user = User::updateOrCreate(
+                ['email' => $validated['email']],
+                [
+                    'sso_id'   => $validated['userId'],
+                    'name'     => $validated['username'],
+                    'password' => null,
+                ]
+            );
 
-        // 3. Log the user into Laravel Auth
-        Auth::login($user);
+            Auth::login($user, true);
 
-        // 4. Store the display info in the session
-        session([
-            'sso_username' => $userData['username'],
-            'sso_email'    => $request->email ?? ($userData['username'] . '@itc.edu.kh'),
-        ]);
+            // Store everything in session for easy access in Blade/Controllers
+            session([
+                'sso_username' => $user->name,
+                'sso_email'    => $user->email,
+                'smis.roles'   => $validated['roles'] ?? [],
+                'smis.context' => $validated['context'] ?? [], // This contains branches/depts
+            ]);
 
-        return response()->json(['success' => true]);
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
+
 }

@@ -7,7 +7,7 @@ use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
-#[Layout('components.layouts.app')]
+#[Layout('components.layouts.guest')]
 class LoginPage extends Component
 {
     public string $email = '';
@@ -40,13 +40,27 @@ class LoginPage extends Component
         $this->redirectIntended(route('dashboard'), navigate: true);
     }
 
+    /**
+     * Updated Logout Method
+     */
     public function logout(): void
     {
+        // 1. Log out from Laravel Auth
         Auth::logout();
 
+        // 2. Explicitly clear SSO session data if it exists
+        session()->forget([
+            'sso_username',
+            'sso_email',
+            'sso_token',
+            'accessToken'
+        ]);
+
+        // 3. Invalidate the entire session and regenerate CSRF token
         request()->session()->invalidate();
         request()->session()->regenerateToken();
 
+        // 4. Redirect to login
         $this->redirect(route('login'), navigate: true);
     }
 

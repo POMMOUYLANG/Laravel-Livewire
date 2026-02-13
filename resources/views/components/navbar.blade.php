@@ -120,9 +120,9 @@
                     <div class="divider my-1 opacity-50"></div>
 
                     <li>
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form id="logout-form" method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit"
+                            <button type="button" onclick="handleLogout()"
                                 class="dropdown-item flex items-center gap-3 w-full text-left text-error hover:bg-error/10">
                                 <span class="icon-[tabler--logout] text-lg"></span>
                                 Sign Out
@@ -131,8 +131,34 @@
                     </li>
                 </ul>
             </div>
-
-
         </div>
     </div>
 </nav>
+
+<script type="module">
+    import {
+        AuthClient
+    } from "{{ asset('vendor/smis-sso/sso-client/sso-client.js') }}";
+
+    const smisClient = new AuthClient({
+        appKey: @js(config('smis-sso.app_key')),
+        authBaseUrl: @js(config('smis-sso.auth_base_url'))
+    });
+
+    window.handleLogout = async function() {
+        try {
+            // Clear application state
+            localStorage.clear();
+
+            // Notify Gateway to clear cookies and session
+            if (typeof smisClient !== 'undefined') {
+                await smisClient.logout();
+            }
+        } catch (e) {
+            console.warn("Gateway session already cleared.");
+        } finally {
+            // Clear Laravel server session
+            document.getElementById('logout-form').submit();
+        }
+    }
+</script>
